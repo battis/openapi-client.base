@@ -31,6 +31,11 @@ abstract class BaseEndpoint extends Mappable
         $this->api = $api;
     }
 
+    public function handleRedirect()
+    {
+        $this->api->handleRedirect();
+    }
+
     /**
      * @param string $method
      * @param array<string, string> $pathParameters

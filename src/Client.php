@@ -13,19 +13,19 @@ use League\OAuth2\Client\Token\AccessTokenInterface;
 class Client
 {
     // session keys
-    public const CODE = "code";
-    public const STATE = "state";
-    public const AUTHORIZATION_CODE = "authorization_code";
-    public const REFRESH_TOKEN = "refresh_token";
+    public const CODE = 'code';
+    public const STATE = 'state';
+    public const AUTHORIZATION_CODE = 'authorization_code';
+    public const REFRESH_TOKEN = 'refresh_token';
     public const REQUEST_URI = 'request_uri';
 
-    private AbstractProvider $api;
+    protected AbstractProvider $oauth2;
     private TokenStorage $storage;
 
-    public function __construct(AbstractProvider $api, TokenStorage $storage)
+    public function __construct(AbstractProvider $oauth2, TokenStorage $storage)
     {
         session_start();
-        $this->api = $api;
+        $this->oauth2 = $oauth2;
         $this->storage = $storage;
     }
 
@@ -50,28 +50,32 @@ class Client
             if ($interactive) {
                 // interactively acquire a new access token
                 if (false === isset($_GET[self::CODE])) {
-                    $authorizationUrl = $this->api->getAuthorizationUrl();
-                    $_SESSION[self::STATE] = $this->api->getState();
+                    $authorizationUrl = $this->oauth2->getAuthorizationUrl();
+                    $_SESSION[self::STATE] = $this->oauth2->getState();
                     // TODO wipe existing token?
-                    $_SESSION[self::REQUEST_URI] = $_SERVER["REQUEST_URI"] ?? null;
+                    $_SESSION[self::REQUEST_URI] =
+                        $_SERVER['REQUEST_URI'] ?? null;
                     header("Location: $authorizationUrl");
                     exit();
                 } elseif (
                     !isset($_GET[self::STATE]) ||
                     (isset($_SESSION[self::STATE]) &&
-                      $_GET[self::STATE] !== $_SESSION[self::STATE])
+                        $_GET[self::STATE] !== $_SESSION[self::STATE])
                 ) {
                     if (isset($_SESSION[self::STATE])) {
                         unset($_SESSION[self::STATE]);
                     }
 
                     throw new ClientException(
-                        var_export(["error" => "invalid state"], true)
+                        var_export(['error' => 'invalid state'], true)
                     );
                 } else {
-                    $token = $this->api->getAccessToken(self::AUTHORIZATION_CODE, [
-                        self::CODE => $_GET[self::CODE],
-                    ]);
+                    $token = $this->oauth2->getAccessToken(
+                        self::AUTHORIZATION_CODE,
+                        [
+                            self::CODE => $_GET[self::CODE],
+                        ]
+                    );
                     $this->storage->setToken($token);
                 }
             } else {
@@ -79,7 +83,7 @@ class Client
             }
         } elseif ($token->hasExpired()) {
             // use refresh token to get new Bb access token
-            $newToken = $this->api->getAccessToken(self::REFRESH_TOKEN, [
+            $newToken = $this->oauth2->getAccessToken(self::REFRESH_TOKEN, [
                 self::REFRESH_TOKEN => $token->getRefreshToken(),
             ]);
             // FIXME need to handle _not_ being able to refresh!
@@ -94,7 +98,7 @@ class Client
     {
         self::getToken();
         /** @var string $uri */
-        $uri = $_SESSION[self::REQUEST_URI] ?? "/";
+        $uri = $_SESSION[self::REQUEST_URI] ?? '/';
         header("Location: $uri");
         exit();
     }
