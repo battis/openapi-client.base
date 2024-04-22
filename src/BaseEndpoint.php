@@ -4,7 +4,6 @@ namespace Battis\OpenAPI\Client;
 
 use Battis\OpenAPI\Client\Client;
 use Battis\OpenAPI\Client\Exceptions\ClientException;
-use Battis\OpenAPI\Generator\Classes\Endpoint;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Psr7\Request;
 use JsonSerializable;
@@ -17,7 +16,7 @@ abstract class BaseEndpoint extends Mappable
     protected string $url = '';
 
     /**
-     * @var array<string, class-string<\Battis\OpenAPI\Generator\Classes\Endpoint>> $endpoints
+     * @var array<string, class-string<\Battis\OpenAPI\Client\BaseEndpoint> $endpoints
      */
     protected array $endpoints = [];
 
@@ -101,9 +100,9 @@ abstract class BaseEndpoint extends Mappable
     /**
      * @param string $name
      *
-     * @return ?Endpoint
+     * @return ?BaseEndpoint
      */
-    public function __get(string $name): ?Endpoint
+    public function __get(string $name): ?BaseEndpoint
     {
         if (array_key_exists($name, $this->endpoints)) {
             $instance = "_$name";
