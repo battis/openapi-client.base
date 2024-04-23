@@ -67,7 +67,8 @@ class Client
                     }
 
                     throw new ClientException(
-                        var_export(['error' => 'invalid state'], true)
+                        "Invalid state (expected `{$_SESSION[self::STATE]}`, received `{$_GET[self::STATE]}`)",
+                        ClientException::INVALID_STATE
                     );
                 } else {
                     $token = $this->oauth2->getAccessToken(
