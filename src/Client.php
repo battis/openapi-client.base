@@ -42,9 +42,7 @@ class Client
      */
     public function getToken($interactive = true)
     {
-        /** @var array $cachedToken */
-        $cachedToken = $this->storage->getToken();
-        $this->token = $cachedToken ? new AccessToken($cachedToken) : null;
+        $this->token = $this->storage->getToken();
 
         // acquire an API access token
         if (empty($this->token)) {
