@@ -21,6 +21,7 @@ class Client
 
     protected AbstractProvider $oauth2;
     private TokenStorage $storage;
+    private ?AccessTokenInterface $token = null;
 
     public function __construct(AbstractProvider $oauth2, TokenStorage $storage)
     {
@@ -43,18 +44,18 @@ class Client
     {
         /** @var array $cachedToken */
         $cachedToken = $this->storage->getToken();
+        $this->token = $cachedToken ? new AccessToken($cachedToken) : null;
 
         // acquire an API access token
-        if (empty($token)) {
+        if (empty($this->token)) {
             if ($interactive) {
                 // interactively acquire a new access token
                 if (false === isset($_GET[self::CODE])) {
-                    $authorizationUrl = $this->oauth2->getAuthorizationUrl();
                     $_SESSION[self::STATE] = $this->oauth2->getState();
                     // TODO wipe existing token?
                     $_SESSION[self::REQUEST_URI] =
                         $_SERVER['REQUEST_URI'] ?? null;
-                    header("Location: $authorizationUrl");
+                    header("Location: {$this->oauth2->getAuthorizationUrl()}");
                     exit();
                 } elseif (
                     !isset($_GET[self::STATE]) ||
@@ -70,28 +71,28 @@ class Client
                         ClientException::INVALID_STATE
                     );
                 } else {
-                    $token = $this->oauth2->getAccessToken(
+                    $this->token = $this->oauth2->getAccessToken(
                         self::AUTHORIZATION_CODE,
                         [
                             self::CODE => $_GET[self::CODE],
                         ]
                     );
-                    $this->storage->setToken($token);
+                    $this->storage->setToken($this->token);
                 }
             } else {
                 return null;
             }
-        } elseif ($token->hasExpired()) {
+        } elseif ($this->token->hasExpired()) {
             // use refresh token to get new Bb access token
             $newToken = $this->oauth2->getAccessToken(self::REFRESH_TOKEN, [
-                self::REFRESH_TOKEN => $token->getRefreshToken(),
+                self::REFRESH_TOKEN => $this->token->getRefreshToken(),
             ]);
             // FIXME need to handle _not_ being able to refresh!
             $this->storage->setToken($newToken);
-            $token = $newToken;
+            $this->token = $newToken;
         }
 
-        return $token;
+        return $this->token;
     }
 
     public function handleRedirect(): void
