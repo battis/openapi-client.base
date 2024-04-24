@@ -4,7 +4,6 @@ namespace Battis\OpenAPI\Client;
 
 use Battis\OpenAPI\Client\Exceptions\ClientException;
 use League\OAuth2\Client\Provider\AbstractProvider;
-use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 
 /**
@@ -91,6 +90,11 @@ class Client
         }
 
         return $this->token;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->oauth2->getHeaders();
     }
 
     public function handleRedirect(): void
