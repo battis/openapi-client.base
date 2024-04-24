@@ -43,7 +43,6 @@ class Client
     {
         /** @var array $cachedToken */
         $cachedToken = $this->storage->getToken();
-        $token = $cachedToken ? new AccessToken($cachedToken) : null;
 
         // acquire an API access token
         if (empty($token)) {
