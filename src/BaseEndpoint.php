@@ -76,9 +76,7 @@ abstract class BaseEndpoint extends Mappable
             ) .
                 '?' .
                 http_build_query($queryParameters),
-            array_merge($this->api->getHeaders(), [
-                'Authentication' => "Bearer $token",
-            ]),
+            $this->api->getHeaders(),
             $body
         );
 

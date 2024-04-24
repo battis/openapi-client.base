@@ -20,7 +20,6 @@ class Client
 
     protected AbstractProvider $oauth2;
     private TokenStorage $storage;
-    private ?AccessTokenInterface $token = null;
 
     public function __construct(AbstractProvider $oauth2, TokenStorage $storage)
     {
@@ -41,10 +40,10 @@ class Client
      */
     public function getToken($interactive = true)
     {
-        $this->token = $this->storage->getToken();
+        $token = $this->storage->getToken();
 
         // acquire an API access token
-        if (empty($this->token)) {
+        if (empty($token)) {
             if ($interactive) {
                 // interactively acquire a new access token
                 if (false === isset($_GET[self::CODE])) {
@@ -68,28 +67,28 @@ class Client
                         ClientException::INVALID_STATE
                     );
                 } else {
-                    $this->token = $this->oauth2->getAccessToken(
+                    $token = $this->oauth2->getAccessToken(
                         self::AUTHORIZATION_CODE,
                         [
                             self::CODE => $_GET[self::CODE],
                         ]
                     );
-                    $this->storage->setToken($this->token);
+                    $this->storage->setToken($token);
                 }
             } else {
                 return null;
             }
-        } elseif ($this->token->hasExpired()) {
+        } elseif ($token->hasExpired()) {
             // use refresh token to get new Bb access token
             $newToken = $this->oauth2->getAccessToken(self::REFRESH_TOKEN, [
-                self::REFRESH_TOKEN => $this->token->getRefreshToken(),
+                self::REFRESH_TOKEN => $token->getRefreshToken(),
             ]);
             // FIXME need to handle _not_ being able to refresh!
             $this->storage->setToken($newToken);
-            $this->token = $newToken;
+            $token = $newToken;
         }
 
-        return $this->token;
+        return $token;
     }
 
     public function getHeaders(): array
