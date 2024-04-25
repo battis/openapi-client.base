@@ -20,12 +20,14 @@ class Client
 
     protected AbstractProvider $oauth2;
     private TokenStorage $storage;
+    private ?AccessTokenInterface $token;
 
     public function __construct(AbstractProvider $oauth2, TokenStorage $storage)
     {
         session_start();
         $this->oauth2 = $oauth2;
         $this->storage = $storage;
+        $this->token = null;
     }
 
     public function isReady(): bool
@@ -40,10 +42,12 @@ class Client
      */
     public function getToken($interactive = true)
     {
-        $token = $this->storage->getToken();
+        if (!$this->token) {
+            $this->token = $this->storage->getToken();
+        }
 
         // acquire an API access token
-        if (empty($token)) {
+        if (empty($this->token)) {
             if ($interactive) {
                 // interactively acquire a new access token
                 if (false === isset($_GET[self::CODE])) {
@@ -67,33 +71,33 @@ class Client
                         ClientException::INVALID_STATE
                     );
                 } else {
-                    $token = $this->oauth2->getAccessToken(
+                    $this->token = $this->oauth2->getAccessToken(
                         self::AUTHORIZATION_CODE,
                         [
                             self::CODE => $_GET[self::CODE],
                         ]
                     );
-                    $this->storage->setToken($token);
+                    $this->storage->setToken($this->token);
                 }
             } else {
                 return null;
             }
-        } elseif ($token->hasExpired()) {
+        } elseif ($this->token->hasExpired()) {
             // use refresh token to get new Bb access token
             $newToken = $this->oauth2->getAccessToken(self::REFRESH_TOKEN, [
-                self::REFRESH_TOKEN => $token->getRefreshToken(),
+                self::REFRESH_TOKEN => $this->token->getRefreshToken(),
             ]);
             // FIXME need to handle _not_ being able to refresh!
             $this->storage->setToken($newToken);
-            $token = $newToken;
+            $this->token = $newToken;
         }
 
-        return $token;
+        return $this->token;
     }
 
     public function getHeaders(): array
     {
-        return $this->oauth2->getHeaders();
+        return $this->oauth2->getHeaders($this->getToken());
     }
 
     public function handleRedirect(): void

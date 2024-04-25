@@ -55,27 +55,18 @@ abstract class BaseEndpoint extends Mappable
          */
         usleep(100000);
 
-        $token = $this->api->getToken();
-        assert(
-            $token !== null,
-            new ClientException(
-                'No valid token available, must interactively authenticate'
-            )
-        );
-
         if ($body instanceof JsonSerializable) {
             $body = json_encode($body);
         }
 
+        $url = $this->url;
+        foreach ($pathParameters as $key => $value) {
+            $url = str_replace('{' . $key . '}', $value, $url);
+        }
+
         $request = new Request(
             $method,
-            str_replace(
-                array_keys($pathParameters),
-                array_values($pathParameters),
-                $this->url
-            ) .
-                '?' .
-                http_build_query($queryParameters),
+            $url . '?' . http_build_query($queryParameters),
             $this->api->getHeaders(),
             $body
         );
