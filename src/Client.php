@@ -95,11 +95,6 @@ class Client
         return $this->token;
     }
 
-    /**
-     * Get headers required for API interaction
-     *
-     * @return array<string, string>
-     */
     public function getHeaders(): array
     {
         return $this->oauth2->getHeaders($this->getToken());
