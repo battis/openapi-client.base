@@ -60,7 +60,7 @@ abstract class BaseComponent extends Mappable implements JsonSerializable
      */
     public function __get(string $name): mixed
     {
-        if (in_array($name, static::$fields)) {
+        if (array_key_exists($name, static::$fields)) {
             if (array_key_exists($name, $this->data)) {
                 return $this->data[$name];
             } else {

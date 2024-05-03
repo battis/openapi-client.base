@@ -16,7 +16,7 @@ abstract class BaseEndpoint extends Mappable
     protected string $url = '';
 
     /**
-     * @var array<string, class-string<\Battis\OpenAPI\Client\BaseEndpoint> $endpoints
+     * @var array<string, class-string<\Battis\OpenAPI\Client\BaseEndpoint>> $endpoints
      */
     protected array $endpoints = [];
 
@@ -30,7 +30,7 @@ abstract class BaseEndpoint extends Mappable
         $this->api = $api;
     }
 
-    public function handleRedirect()
+    public function handleRedirect(): void
     {
         $this->api->handleRedirect();
     }
@@ -68,7 +68,7 @@ abstract class BaseEndpoint extends Mappable
             $method,
             $url . '?' . http_build_query($queryParameters),
             $this->api->getHeaders(),
-            $body
+            $body ?: null
         );
 
         if ($this->http === null) {
