@@ -47,15 +47,15 @@ abstract class BaseEndpoint extends Mappable
         string $method,
         array $pathParameters = [],
         array $queryParameters = [],
-        mixed $body = null
+        mixed $body = null,
+        array $headers = []
     ): mixed {
         /*
          * TODO deal with refreshing tokens (need callback to store new refresh token)
          *   https://developer.blackbaud.com/skyapi/docs/in-depth-topics/api-request-throttling
          */
-        usleep(100000);
+        //usleep(100000);
 
-        $headers = [];
         if ($body instanceof JsonSerializable) {
             $body = json_encode($body);
             $headers['Content-Type'] = 'application/json';
