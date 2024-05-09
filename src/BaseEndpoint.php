@@ -55,8 +55,10 @@ abstract class BaseEndpoint extends Mappable
          */
         usleep(100000);
 
+        $headers = [];
         if ($body instanceof JsonSerializable) {
             $body = json_encode($body);
+            $headers['Content-Type'] = 'application/json';
         }
 
         $url = $this->url;
@@ -67,12 +69,7 @@ abstract class BaseEndpoint extends Mappable
         $request = new Request(
             $method,
             $url . '?' . http_build_query($queryParameters),
-            array_merge(
-                $body instanceof JsonSerializable
-                    ? ['Content-Type' => 'application/json']
-                    : [],
-                $this->api->getHeaders()
-            ),
+            array_merge($headers, $this->api->getHeaders()),
             $body
         );
 
