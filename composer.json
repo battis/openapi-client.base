@@ -1,8 +1,10 @@
 {
   "name": "battis/openapi-client.base",
   "description": "Base for a PHP client for a RESTful API from its OpenAPI description file",
+  "prefer-stable": true,
+  "minimum-stability": "dev",
   "require": {
-    "league/oauth2-client": "^2.7-stable"
+    "league/oauth2-client": "^2.7"
   },
   "license": "GPL-3.0",
   "authors": [
