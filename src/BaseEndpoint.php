@@ -67,8 +67,13 @@ abstract class BaseEndpoint extends Mappable
         $request = new Request(
             $method,
             $url . '?' . http_build_query($queryParameters),
-            $this->api->getHeaders(),
-            $body instanceof BaseComponent ? json_encode($body) : $body
+            array_merge(
+                $body instanceof JsonSerializable
+                    ? ['Content-Type' => 'application/json']
+                    : [],
+                $this->api->getHeaders()
+            ),
+            $body
         );
 
         if ($this->http === null) {
