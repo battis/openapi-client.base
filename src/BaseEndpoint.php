@@ -76,6 +76,8 @@ abstract class BaseEndpoint extends Mappable
             $body
         );
 
+        error_log(var_export($request, true));
+
         if ($this->http === null) {
             $this->http = new HttpClient();
         }
